@@ -66,12 +66,10 @@ extern "C"
 #define NRF24L01_DYN_PYL_DIS  0x00
 
 // Auto ACK
-#define NRF24L01_AUT_ACK_EN   0x01
+#define NRF24L01_AUT_ACK_EN   0x3F
 #define NRF24L01_AUT_ACK_DIS  0x00
 
 // Address width
-#define NRF24L01_ADDR_1       0x01
-#define NRF24L01_ADDR_2       0x02
 #define NRF24L01_ADDR_3       0x03
 #define NRF24L01_ADDR_4       0x04
 #define NRF24L01_ADDR_5       0x05
@@ -118,63 +116,332 @@ extern "C"
 #define NRF24L01_MAX_RETR     3
 #define NRF24L01_RX_AVAIL     2
 
+/* Typedefs ------------------------------------------------------------------*/
+
+/*
+* nRF24L01+ return status
+*/
+typedef enum {
+	NRF24L01_SUCCESS = 0,
+	NRF24L01_ERROR = 1,
+	NRF24L01_TIMEOUT = 2
+} nRF24L01_retStatus_t;
+
+/*
+* nRF24L01+ HW pins
+*/
+typedef struct {
+	int pin;
+	void *port;
+} nRF24L01_HWPin_t;
+
+/*
+ * nRF24L01+ struct
+ */
+typedef struct
+{
+  nRF24L01_HWPin_t cs;
+  nRF24L01_HWPin_t ce;
+  void *spi;
+  uint8_t channel, powerLevel, dataRate, payloadSize, addrWidth, CRCLength, autoAck, retrDelay, retrCount, dynPayloadEn;
+  uint8_t txAddress[5], rx0Address[5];
+} nRF24L01_t;
+
 /* Function prototypes --------------------------------------------------------*/
 
 /*!
- * @brief Init button structure
+ * @brief Initialize nRF24L01+ module according to parameters stored in module structure. Randomizes nRF24L01.txAddress if not already set
  *
- * @param[in] button           pointer to button object
- * @param[in] debounceTicks    number of ticks used for debouncing. Use 20ms as a starting point
- * @param[in] longPressTicks   number of ticks that the button needs to be pressed to detect long-press
+ * @param[in] nRF24L01            pointer to nRF24L01 structure
+ *
+ * @return NRF24L01_SUCCESS if module is initialized succesfully, NRF24L01_ERROR otherwise
  */
+nRF24L01_retStatus_t nRF24L01_init(nRF24L01_t *nRF24L01);
 
-void NRF24L01_init(void);
-uint8_t NRF24L01_config(uint8_t channel, uint8_t power_level, uint8_t data_rate, uint8_t payload_size, uint8_t dyn_payload, uint8_t addr_width, uint8_t CRC_length, uint8_t auto_ack_all, uint8_t delay_retr, uint8_t count_retr);
-void NRF24L01_setAutoAck(uint8_t pipe, uint8_t enable);
-uint8_t NRF24L01_available(void);
-uint8_t NRF24L01_pipeAvailable(void);
-void NRF24L01_turnOnRadio(void);
-void NRF24L01_turnOffRadio(void);
-uint8_t NRF24L01_getStatus(void);
-uint8_t NRF24L01_flushTXBuffer(void);
-uint8_t NRF24L01_flushRXBuffer(void);
-void NRF24L01_maskIRQ(uint8_t tx, uint8_t fail, uint8_t rx);
-uint8_t NRF24L01_getChannel(void);
-uint8_t NRF24L01_getDynamicPayloadLength(void);
-void NRF24L01_setCRCLength(uint8_t length);
-uint8_t NRF24L01_getCRCLength(void);
-uint8_t NRF24L01_checkRPD(void);
-void NRF24L01_reUseTX(void);
-void NRF24L01_setPAPower(uint8_t level);
-uint8_t NRF24L01_getPAPower(void);
-uint8_t NRF24L01_setDataRate(uint8_t rate);
-uint8_t NRF24L01_getDataRate(void);
-void NRF24L01_enableAckPayload(void);
-void NRF24L01_enableDynamicAck(void);
-uint8_t NRF24L01_whatHappened(void);
-void NRF24L01_startTransmitter(void);
-void NRF24L01_startReceiver(void);
-void NRF24L01_openWritingPipe(const void* address);
-void NRF24L01_reopenWritingPipe(void);
-void NRF24L01_openReadingPipe(uint8_t pipe, const void* address);
-void NRF24L01_closeReadingPipe(uint8_t pipe);
-void NRF24L01_read(void* buf, uint8_t len);
-void NRF24L01_writeAckPayload(uint8_t pipe, const void* buf, uint8_t data_len);
-uint8_t NRF24L01_write(const void* buf, uint8_t len, const uint8_t multicast, const uint8_t wait, uint32_t timeout);
-uint8_t NRF24L01_safeWrite(const void* buf, uint8_t len, const uint8_t multicast, const uint8_t wait, uint32_t timeout);
-void NRF24L01_directWrite(const void* buf, uint8_t len, const uint8_t multicast, uint8_t startTx);
-uint8_t NRF24L01_TXStandby(uint8_t wait_dispatch, uint32_t timeout);
-uint8_t NRF24L01_RXMatch(void* address, uint8_t working_byte, uint32_t delayms, uint32_t timeout); // matches the sender address, delay and timeout in ms
-void NRF24L01_RandTXAddr(void); // choose a random TX address
-// Ex private members
-uint8_t NRF24L01_readRegister(uint8_t thisRegister);
-void NRF24L01_readMultRegister(uint8_t* buffer, uint8_t thisRegister, uint8_t length);
-void NRF24L01_writeRegister(uint8_t thisRegister, const uint8_t thisValue);
-void NRF24L01_writeMultRegister(uint8_t thisRegister, const void* thisValue, uint8_t length);
-uint8_t NRF24L01_sendCMD(uint8_t cmd);
-uint8_t NRF24L01_write_payload(const void* buf, uint8_t data_len, const uint8_t writeType);
-uint8_t NRF24L01_read_payload(void* buf, uint8_t data_len);
-extern uint8_t NRF24L01_tx_address[5]; //TX address
+/*!
+ * @brief Set auto-acknowledge on a specific pipe
+ *
+ * @param[in] nRF24L01            pointer to nRF24L01 structure
+ * @param[in] pipe                target pipe
+ * @param[in] enable              1 to enable, 0 to disable
+ *
+ * @return NRF24L01_SUCCESS if operation is completed succesfully, NRF24L01_ERROR otherwise
+ */
+nRF24L01_retStatus_t nRF24L01_setAutoAck(nRF24L01_t *nRF24L01, uint8_t pipe, uint8_t enable);
+
+/*!
+ * @brief Check if there is data available in FIFO buffer
+ *
+ * @param[in] nRF24L01            pointer to nRF24L01 structure
+ *
+ * @return 1 if there is data available, 0 otherwise
+ */
+uint8_t nRF24L01_available(nRF24L01_t *nRF24L01);
+
+/*!
+ * @brief Check what pipe received the available data
+ *
+ * @param[in] nRF24L01            pointer to nRF24L01 structure
+ *
+ * @return number of pipe that received the data (0-5). 7 if no data received
+ */
+uint8_t nRF24L01_pipeAvailable(nRF24L01_t *nRF24L01);
+
+/*!
+ * @brief Turn on the module
+ *
+ * @param[in] nRF24L01            pointer to nRF24L01 structure
+ */
+void nRF24L01_turnOnRadio(nRF24L01_t *nRF24L01);
+
+/*!
+ * @brief Turn off the module
+ *
+ * @param[in] nRF24L01            pointer to nRF24L01 structure
+ */
+void nRF24L01_turnOffRadio(nRF24L01_t *nRF24L01);
+
+/*!
+ * @brief Check value of status register
+ *
+ * @param[in] nRF24L01            pointer to nRF24L01 structure
+ *
+ * @return raw value of status register
+ */
+uint8_t nRF24L01_getStatus(nRF24L01_t *nRF24L01);
+
+/*!
+ * @brief Flush transmit buffer
+ *
+ * @param[in] nRF24L01            pointer to nRF24L01 structure
+ */
+uint8_t nRF24L01_flushTXBuffer(nRF24L01_t *nRF24L01);
+
+/*!
+ * @brief Flush receive buffer
+ *
+ * @param[in] nRF24L01            pointer to nRF24L01 structure
+ */
+uint8_t nRF24L01_flushRXBuffer(nRF24L01_t *nRF24L01);
+
+/*!
+ * @brief Mask specified interrupt avoiding them being reflected on IRQ pin
+ *
+ * @param[in] nRF24L01            pointer to nRF24L01 structure
+ * @param[in] tx                  1 to disable transmit data sent interrupt
+ * @param[in] maxRt               1 to disable maximum retries interrupt
+ * @param[in] rx                  1 to disable rx data received interrupt
+ */
+void nRF24L01_maskIRQ(nRF24L01_t *nRF24L01, uint8_t tx, uint8_t maxRt, uint8_t rx);
+
+/*!
+ * @brief Get current channel
+ *
+ * @param[in] nRF24L01            pointer to nRF24L01 structure
+ *
+ * @return channel number
+ */
+uint8_t nRF24L01_getChannel(nRF24L01_t *nRF24L01);
+
+/*!
+ * @brief Get payload length when dynamic payload is enabled
+ *
+ * @param[in] nRF24L01            pointer to nRF24L01 structure
+ *
+ * @return payload length
+ */
+uint8_t nRF24L01_getDynamicPayloadLength(nRF24L01_t *nRF24L01);
+
+/*!
+ * @brief Set CRC length according to parameters stored in module structure
+ *
+ * @param[in] nRF24L01            pointer to nRF24L01 structure
+ */
+void nRF24L01_setCRCLength(nRF24L01_t *nRF24L01);
+
+/*!
+ * @brief Get current CRC length
+ *
+ * @param[in] nRF24L01            pointer to nRF24L01 structure
+ *
+ * @return NRF24L01_CRC_0, NRF24L01_CRC_8 or NRF24L01_CRC_16
+ */
+uint8_t nRF24L01_getCRCLength(nRF24L01_t *nRF24L01);
+
+/*!
+ * @brief Check received power
+ *
+ * @param[in] nRF24L01            pointer to nRF24L01 structure
+ *
+ * @return 1 if received power is greater than -64dBm, 0 otherwise
+ */
+uint8_t nRF24L01_checkRPD(nRF24L01_t *nRF24L01);
+
+/*!
+ * @brief Re-transmit previous TX payload
+ *
+ * @param[in] nRF24L01            pointer to nRF24L01 structure
+ */
+void nRF24L01_reUseTX(nRF24L01_t *nRF24L01);
+
+/*!
+ * @brief Set output power level according to parameters stored in module structure
+ *
+ * @param[in] nRF24L01            pointer to nRF24L01 structure
+ */
+void nRF24L01_setPAPower(nRF24L01_t *nRF24L01);
+
+/*!
+ * @brief Get current power level
+ *
+ * @param[in] nRF24L01            pointer to nRF24L01 structure
+ *
+ * @return NRF24L01_PA_MIN, NRF24L01_PA_LOW, NRF24L01_PA_HIGH or NRF24L01_PA_MAX
+ */
+uint8_t nRF24L01_getPAPower(nRF24L01_t *nRF24L01);
+
+/*!
+ * @brief Set data rate according to parameters stored in module structure
+ *
+ * @param[in] nRF24L01            pointer to nRF24L01 structure
+ *
+ * @return NRF24L01_SUCCESS if operation is completed succesfully, NRF24L01_ERROR otherwise
+ */
+nRF24L01_retStatus_t nRF24L01_setDataRate(nRF24L01_t *nRF24L01);
+
+/*!
+ * @brief Get current data rate
+ *
+ * @param[in] nRF24L01            pointer to nRF24L01 structure
+ *
+ * @return NRF24L01_250KBPS, NRF24L01_1MBPS or NRF24L01_2MBPS
+ */
+uint8_t nRF24L01_getDataRate(nRF24L01_t *nRF24L01);
+
+/*!
+ * @brief Enable acknowledge payload
+ *
+ * @param[in] nRF24L01            pointer to nRF24L01 structure
+ */
+void nRF24L01_enableAckPayload(nRF24L01_t *nRF24L01);
+
+/*!
+ * @brief Enable dynamic acknowledge
+ *
+ * @param[in] nRF24L01            pointer to nRF24L01 structure
+ */
+void nRF24L01_enableDynamicAck(nRF24L01_t *nRF24L01);
+
+/*!
+ * @brief Check what caused an interrupt
+ *
+ * @param[in] nRF24L01            pointer to nRF24L01 structure
+ *
+ * @return 5 if TX has been sent, 3 if it reached the max number of retries and 2 if data received (multiplied if more than 1)
+ */
+uint8_t nRF24L01_whatHappened(nRF24L01_t *nRF24L01);
+
+/*!
+ * @brief Open writing pipe with a specific address
+ *
+ * @param[in] nRF24L01            pointer to nRF24L01 structure
+ * @param[in] address             pointer to TX address
+ */
+void nRF24L01_openWritingPipe(nRF24L01_t *nRF24L01, const void *address);
+
+/*!
+ * @brief Re-open writing pipe with TX address stored in module structure
+ *
+ * @param[in] nRF24L01            pointer to nRF24L01 structure
+ */
+void nRF24L01_reopenWritingPipe(nRF24L01_t *nRF24L01);
+
+/*!
+ * @brief Open a specific reading pipe with a specific address
+ *
+ * @attention Pipe 1 and 0 cannot use the same address. Pipes 2-5 use the same address as pipe 1, except for the LSB.
+ *
+ * @param[in] nRF24L01            pointer to nRF24L01 structure
+ * @param[in] pipe                number of reading pipe (0-5)
+ * @param[in] address             pointer to RX address
+ */
+void nRF24L01_openReadingPipe(nRF24L01_t *nRF24L01, uint8_t pipe, void *address);
+
+/*!
+ * @brief Close a specific reading pipe
+ *
+ * @param[in] nRF24L01            pointer to nRF24L01 structure
+ * @param[in] pipe                number of reading pipe (0-5)
+ */
+void nRF24L01_closeReadingPipe(nRF24L01_t *nRF24L01, uint8_t pipe);
+
+/*!
+ * @brief Start transmitter after having configured a writing pipe
+ *
+ * @param[in] nRF24L01            pointer to nRF24L01 structure
+ */
+void nRF24L01_startTransmitter(nRF24L01_t *nRF24L01);
+
+/*!
+ * @brief Start receiver after having configured a reading pipe. Pipe 0 is configured automatically if nRF24L01.rx0Address is set
+ *
+ * @param[in] nRF24L01            pointer to nRF24L01 structure
+ */
+void nRF24L01_startReceiver(nRF24L01_t *nRF24L01);
+
+/*!
+ * @brief Write data to be sent, without waiting for it to be sent
+ *
+ * @param[in] nRF24L01            pointer to nRF24L01 structure
+ * @param[in] buffer              pointer to data to be sent
+ * @param[in] length              length of data to be sent
+ * @param[in] multicast           1 to require ACK from receiver, 0 othwerise. (to use 0, nRF24L01_enableDynamicAck(nRF24L01) must be called during initialization)
+ * @param[in] wait                1 to empty current buffer before transmitting new data, 0 otherwise
+ * @param[in] timeout             timeout in [ms]
+ *
+ * @return NRF24L01_SUCCESS if data is sent succesfully, NRF24L01_TIMEOUT if timeout is reached
+ */
+nRF24L01_retStatus_t nRF24L01_write(nRF24L01_t *nRF24L01, const void *buffer, uint8_t length, const uint8_t multicast, const uint8_t wait, uint32_t timeout);
+
+/*!
+ * @brief Write data to be sent, waiting for it to be sent
+ *
+ * @param[in] nRF24L01            pointer to nRF24L01 structure
+ * @param[in] buffer              pointer to data to be sent
+ * @param[in] length              length of data to be sent
+ * @param[in] multicast           1 to require ACK from receiver, 0 othwerise. (to use 0, nRF24L01_enableDynamicAck(nRF24L01) must be called during initialization)
+ * @param[in] wait                1 to empty current buffer before transmitting new data, 0 otherwise
+ * @param[in] timeout             timeout in [ms]
+ *
+ * @return NRF24L01_SUCCESS if data is sent succesfully, NRF24L01_TIMEOUT if timeout is reached
+ */
+nRF24L01_retStatus_t nRF24L01_safeWrite(nRF24L01_t *nRF24L01, const void *buffer, uint8_t length, const uint8_t multicast, const uint8_t wait, uint32_t timeout);
+
+/*!
+ * @brief Put TX into Standby I mode. To be used together with nRF24L01_write fcn. Not necessary if safeWrite is used.
+ *
+ * @param[in] nRF24L01            pointer to nRF24L01 structure
+ * @param[in] wait_dispatch       1 to wait for all waiting TX data to be sent, 0 otherwise
+ * @param[in] timeout             timeout in [ms]
+ */
+uint8_t nRF24L01_TXStandby(nRF24L01_t *nRF24L01, uint8_t wait_dispatch, uint32_t timeout);
+
+/*!
+ * @brief Get a random TX address
+ *
+ * @param[in] nRF24L01            pointer to nRF24L01 structure
+ * @param[in] workingByte         number of byte to be randomized (0-4)
+ */
+void nRF24L01_randTXAddr(nRF24L01_t *nRF24L01, uint8_t workingByte);
+
+/*!
+ * @brief Read received data
+ *
+ * @param[in] nRF24L01            pointer to nRF24L01 structure
+ * @param[out] buffer             pointer to data to be read
+ * @param[in] length              length of data to be read
+ */
+void nRF24L01_read(nRF24L01_t *nRF24L01, void *buffer, uint8_t length);
 
 #ifdef __cplusplus
 }

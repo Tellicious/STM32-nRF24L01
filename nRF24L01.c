@@ -191,14 +191,14 @@ static void nRF24L01_SPIRead(nRF24L01_t *nRF24L01, uint8_t addr, uint8_t *buffer
 }
 
 //-----------------------Write payload-------------------------//
-static void nRF24L01_writePayload(nRF24L01_t *nRF24L01, const void *buffer, uint8_t data_len, const uint8_t writeType)
+static void nRF24L01_writePayload(nRF24L01_t *nRF24L01, const void *buffer, uint8_t length, const uint8_t writeType)
 {
-  data_len = NRF24L01_MIN(data_len, nRF24L01->payloadSize);
-  uint8_t txLen = 1 + (nRF24L01->dynPayloadEn ? data_len : nRF24L01->payloadSize);
+  length = NRF24L01_MIN(length, nRF24L01->payloadSize);
+  uint8_t txLen = 1 + (nRF24L01->dynPayloadEn ? length : nRF24L01->payloadSize);
   uint8_t txBuffer[txLen];
   memset(txBuffer, 0x00, txLen);
   txBuffer[0] = writeType;
-  memcpy(txBuffer + 1, buffer, data_len);
+  memcpy(txBuffer + 1, buffer, length);
   NRF24L01_WRITE_PIN(nRF24L01->cs.port, nRF24L01->cs.pin, NRF24L01_PIN_RESET);
   while (HAL_SPI_GetState(nRF24L01->spi) != HAL_SPI_STATE_READY)
     ;
@@ -209,14 +209,14 @@ static void nRF24L01_writePayload(nRF24L01_t *nRF24L01, const void *buffer, uint
 }
 
 //-------------------------Write ACK payload---------------------//
-void nRF24L01_writeAckPayload(nRF24L01_t *nRF24L01, uint8_t pipe, void *buffer, uint8_t data_len)
+void nRF24L01_writeAckPayload(nRF24L01_t *nRF24L01, uint8_t pipe, void *buffer, uint8_t length)
 {
-  data_len = NRF24L01_MIN(data_len, 32);
-  uint8_t txLen = 1 + (nRF24L01->dynPayloadEn ? data_len : nRF24L01->payloadSize);
+  length = NRF24L01_MIN(length, 32);
+  uint8_t txLen = 1 + (nRF24L01->dynPayloadEn ? length : nRF24L01->payloadSize);
   uint8_t txBuffer[txLen];
   memset(txBuffer, 0x00, txLen);
   txBuffer[0] = W_ACK_PAYLOAD | (pipe & 0x07);
-  memcpy(txBuffer + 1, buffer, data_len);
+  memcpy(txBuffer + 1, buffer, length);
   NRF24L01_WRITE_PIN(nRF24L01->cs.port, nRF24L01->cs.pin, NRF24L01_PIN_RESET);
   while (HAL_SPI_GetState(nRF24L01->spi) != HAL_SPI_STATE_READY)
     ;
@@ -227,10 +227,10 @@ void nRF24L01_writeAckPayload(nRF24L01_t *nRF24L01, uint8_t pipe, void *buffer, 
 }
 
 //-----------------------Read payload-------------------------//
-static void nRF24L01_readPayload(nRF24L01_t *nRF24L01, void *buffer, uint8_t data_len)
+static void nRF24L01_readPayload(nRF24L01_t *nRF24L01, void *buffer, uint8_t length)
 {
-  data_len = NRF24L01_MIN(data_len, nRF24L01->payloadSize);
-  uint8_t rxLen = ((nRF24L01->dynPayloadEn == NRF24L01_DYN_PYL_EN) ? data_len : nRF24L01->payloadSize);
+  length = NRF24L01_MIN(length, nRF24L01->payloadSize);
+  uint8_t rxLen = ((nRF24L01->dynPayloadEn == NRF24L01_DYN_PYL_EN) ? length : nRF24L01->payloadSize);
   uint8_t txBuffer = R_RX_PAYLOAD;
   NRF24L01_WRITE_PIN(nRF24L01->cs.port, nRF24L01->cs.pin, NRF24L01_PIN_RESET);
   while (HAL_SPI_GetState(nRF24L01->spi) != HAL_SPI_STATE_READY)

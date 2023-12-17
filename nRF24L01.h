@@ -430,13 +430,26 @@ nRF24L01_retStatus_t nRF24L01_write(nRF24L01_t *nRF24L01, const void *buffer, ui
 nRF24L01_retStatus_t nRF24L01_safeWrite(nRF24L01_t *nRF24L01, const void *buffer, uint8_t length, const uint8_t multicast, const uint8_t wait, uint32_t timeout);
 
 /*!
- * @brief Put TX into Standby I mode. To be used together with nRF24L01_write fcn. Not necessary if safeWrite is used.
+ * @brief Put TX into Standby I mode. To be used together with nRF24L01_write fcn. Not necessary if safeWrite is used
  *
  * @param[in] nRF24L01            pointer to nRF24L01 structure
  * @param[in] wait_dispatch       1 to wait for all waiting TX data to be sent, 0 otherwise
  * @param[in] timeout             timeout in [ms]
  */
 uint8_t nRF24L01_TXStandby(nRF24L01_t *nRF24L01, uint8_t wait_dispatch, uint32_t timeout);
+
+/*!
+ * @brief Write a special payload that is re-transmitted by the receiver together with the ACK message. nRF24L01_enableAckPayload(nRF24L01) must be set
+ *
+ * @attention If ACK packet payload is activated, ACK packets have dynamic payload lengths and the Dynamic Payload Length feature should be enabled for pipe 0 on the PTX and PRX. This is to ensure that they receive the ACK packets with payloads. If the ACK payload is more than 15 byte in 2Mbps mode the ARD must be 500μS or more, and if the ACK payload is more than 5 byte in 1Mbps mode the ARD must be 500μS or more. In 250kbps mode (even when the payload is not in ACK) the ARD must be 500μS or more.
+ * 
+ * @param[in] nRF24L01            pointer to nRF24L01 structure
+ * @param[in] pipe                number of reading pipe (0-5)
+ * @param[in] buffer              pointer to data to be sent
+ * @param[in] length              length of data to be sent
+ * @param[in] timeout             timeout in [ms]
+ */
+void nRF24L01_writeAckPayload(nRF24L01_t *nRF24L01, uint8_t pipe, void *buffer, uint8_t length);
 
 /*!
  * @brief Read received data

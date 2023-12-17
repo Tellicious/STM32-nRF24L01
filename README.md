@@ -37,11 +37,11 @@ Example usage:
 - Receive data:
     ```cpp
     while (nRF24L01_available(&nRF24L01))
-	  {
-	      uint8_t recBuf[nRF24L01.payloadSize];
-	      memset(recBuf, 0x00, nRF24L01.payloadSize);
-	      nRF24L01_read(&nRF24L01, recBuf, nRF24L01.payloadSize);
-	  }
+    {
+        uint8_t recBuf[nRF24L01.payloadSize];
+        memset(recBuf, 0x00, nRF24L01.payloadSize);
+        nRF24L01_read(&nRF24L01, recBuf, nRF24L01.payloadSize);
+    }
     ```
 - Transmit data:
     ```cpp

@@ -121,7 +121,8 @@ extern "C"
 /*
 * nRF24L01+ return status
 */
-typedef enum {
+typedef enum
+{
 	NRF24L01_SUCCESS = 0,
 	NRF24L01_ERROR = 1,
 	NRF24L01_TIMEOUT = 2
@@ -130,7 +131,8 @@ typedef enum {
 /*
 * nRF24L01+ HW pins
 */
-typedef struct {
+typedef struct
+{
 	int pin;
 	void *port;
 } nRF24L01_HWPin_t;
@@ -342,6 +344,16 @@ void nRF24L01_enableDynamicAck(nRF24L01_t *nRF24L01);
 uint8_t nRF24L01_whatHappened(nRF24L01_t *nRF24L01);
 
 /*!
+  * @brief Clear interrupts
+  *
+  * @param[in] nRF24L01            pointer to nRF24L01 structure
+  * @param[in] tx                  1 to clear transmit data sent interrupt
+  * @param[in] maxRt               1 to clear maximum retries interrupt
+  * @param[in] rx                  1 to clear rx data received interrupt
+  */
+void nRF24L01_clearIrq(nRF24L01_t *nRF24L01, uint8_t tx, uint8_t maxRt, uint8_t rx);
+
+/*!
  * @brief Open writing pipe with a specific address
  *
  * @param[in] nRF24L01            pointer to nRF24L01 structure
@@ -359,7 +371,7 @@ void nRF24L01_reopenWritingPipe(nRF24L01_t *nRF24L01);
 /*!
  * @brief Open a specific reading pipe with a specific address
  *
- * @attention Pipe 1 and 0 cannot use the same address. Pipes 2-5 use the same address as pipe 1, except for the LSB.
+ * @attention Pipe 1 and 0 cannot use the same address. Pipes 2-5 use the same address as pipe 1, except for the LSB
  *
  * @param[in] nRF24L01            pointer to nRF24L01 structure
  * @param[in] pipe                number of reading pipe (0-5)
@@ -427,6 +439,15 @@ nRF24L01_retStatus_t nRF24L01_safeWrite(nRF24L01_t *nRF24L01, const void *buffer
 uint8_t nRF24L01_TXStandby(nRF24L01_t *nRF24L01, uint8_t wait_dispatch, uint32_t timeout);
 
 /*!
+ * @brief Read received data
+ *
+ * @param[in] nRF24L01            pointer to nRF24L01 structure
+ * @param[out] buffer             pointer to data to be read
+ * @param[in] length              length of data to be read
+ */
+void nRF24L01_read(nRF24L01_t *nRF24L01, void *buffer, uint8_t length);
+
+/*!
  * @brief Get a random TX address
  *
  * @param[in] nRF24L01            pointer to nRF24L01 structure
@@ -435,13 +456,18 @@ uint8_t nRF24L01_TXStandby(nRF24L01_t *nRF24L01, uint8_t wait_dispatch, uint32_t
 void nRF24L01_randTXAddr(nRF24L01_t *nRF24L01, uint8_t workingByte);
 
 /*!
- * @brief Read received data
+ * @brief Match sender address and start receiving on the specified pipe once matched
  *
  * @param[in] nRF24L01            pointer to nRF24L01 structure
- * @param[out] buffer             pointer to data to be read
- * @param[in] length              length of data to be read
+ * @param[in] pipe                number of pipe where to perform the match (0-5)
+ * @param[out] address            pointer to starting receiver address
+ * @param[in] workingByte         byte to be manipulated during search (0-4). If pipe 2-5 is selected, 0 is the only valid option
+ * @param[in] delay               delay in [ms] between opening of reading pipe anche check for data availability (depends on transmitter frequency)
+ * @param[in] timeout             timeout in [ms]
+ *
+ * @return NRF24L01_SUCCESS if a match is found, NRF24L01_TIMEOUT if timeout is reached
  */
-void nRF24L01_read(nRF24L01_t *nRF24L01, void *buffer, uint8_t length);
+nRF24L01_retStatus_t nRF24L01_RXMatch(nRF24L01_t *nRF24L01, uint8_t pipe, void *address, uint8_t workingByte, uint32_t delay, uint32_t timeout);
 
 #ifdef __cplusplus
 }

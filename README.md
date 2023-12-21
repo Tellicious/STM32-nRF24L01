@@ -3,7 +3,7 @@
 Example usage:
 - Initialization:
     ```cpp
-    //initialize nRF24L01 module
+    /* initialize nRF24L01 module */
     nRF24L01.spi = &hspi1;
     nRF24L01.cs.port = nRF24_CS_GPIO_Port;
     nRF24L01.cs.pin = nRF24_CS_Pin;
@@ -52,6 +52,6 @@ Example usage:
 
     if (nRF24L01_safeWrite(nRF24L01, txBuffer, nRF24L01.payloadSize, 1, 1, 8))
     {
-        //data sent succesfully
+        /* data sent succesfully */
     }
     ```

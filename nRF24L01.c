@@ -450,14 +450,14 @@ nRF24L01_retStatus_t nRF24L01_setDataRate(nRF24L01_t* nRF24L01) {
     nRF24L01->dataRate = NRF24L01_MIN(nRF24L01->dataRate, 2);
     /* Set 1 Mb/s: both HIGH and LOW eq to 0 */
     buffer &= ~(NRF24L01_BIT(RF_DR_LOW) | NRF24L01_BIT(RF_DR_HIGH));
-    /* txRxDelay = 85; */ micros if (nRF24L01->dataRate == NRF24L01_250KBPS) {
+    /* txRxDelay = 85; */ // micros
+    if (nRF24L01->dataRate == NRF24L01_250KBPS) {
         buffer |= NRF24L01_BIT(RF_DR_LOW);
-        /* txRxDelay = 155; */ micros
-    }
-    else if (nRF24L01->dataRate == NRF24L01_2MBPS) {
+        /* txRxDelay = 155; */ // micros
+    } else if (nRF24L01->dataRate == NRF24L01_2MBPS) {
         /* Set 2 Mb/s */
         buffer |= NRF24L01_BIT(RF_DR_HIGH);
-        /* txRxDelay = 65; */ micros
+        /* txRxDelay = 65; */ // micros
     }
     nRF24L01_SPIWrite(nRF24L01, REG_RF_SETUP, &buffer, 1);
 

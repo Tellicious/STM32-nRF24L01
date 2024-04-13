@@ -352,8 +352,14 @@ uint8_t nRF24L01_flushRXBuffer(nRF24L01_t* nRF24L01) { return nRF24L01_SPICmd(nR
 void nRF24L01_maskIRQ(nRF24L01_t* nRF24L01, uint8_t tx, uint8_t maxRt, uint8_t rx) {
     uint8_t buffer;
     nRF24L01_SPIRead(nRF24L01, REG_CONFIG, &buffer, 1);
-    buffer &= (maxRt << MASK_MAX_RT | tx << MASK_TX_DS | rx << MASK_RX_DR);
+    buffer = (buffer & 0x07) | (maxRt << MASK_MAX_RT | tx << MASK_TX_DS | rx << MASK_RX_DR);
     nRF24L01_SPIWrite(nRF24L01, REG_CONFIG, &buffer, 1);
+}
+
+/*-----------------------Get in-use channel-----------------------*/
+void nRF24L01_setChannel(nRF24L01_t* nRF24L01, uint8_t channel) {
+    nRF24L01_SPIWrite(nRF24L01, REG_RF_CH, &channel, 1);
+    return;
 }
 
 /*-----------------------Get in-use channel-----------------------*/

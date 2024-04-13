@@ -230,6 +230,14 @@ uint8_t nRF24L01_flushRXBuffer(nRF24L01_t* nRF24L01);
 void nRF24L01_maskIRQ(nRF24L01_t* nRF24L01, uint8_t tx, uint8_t maxRt, uint8_t rx);
 
 /**
+ * \brief           Set TX/RX channel
+ *
+ * \param[in]       nRF24L01: pointer to nRF24L01 structure
+ * \param[in]       channel: channel number
+ */
+void nRF24L01_setChannel(nRF24L01_t* nRF24L01, uint8_t channel);
+
+/**
  * \brief           Get current channel
  *
  * \param[in]       nRF24L01: pointer to nRF24L01 structure

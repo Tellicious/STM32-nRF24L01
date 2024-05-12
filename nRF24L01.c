@@ -393,6 +393,13 @@ void nRF24L01_turnOffRadio(nRF24L01_t* nRF24L01) {
 /*-----------------------Get status value-------------------------*/
 uint8_t nRF24L01_getStatus(nRF24L01_t* nRF24L01) { return nRF24L01_SPICmd(nRF24L01, NOP); }
 
+/*---------------------Get FIFO status value----------------------*/
+uint8_t nRF24L01_getFIFOStatus(nRF24L01_t* nRF24L01) {
+    uint8_t buffer;
+    nRF24L01_SPIRead(nRF24L01, REG_FIFO_STATUS, &buffer, 1);
+    return buffer;
+}
+
 /*---------------------------Flush TX----------------------------*/
 uint8_t nRF24L01_flushTXBuffer(nRF24L01_t* nRF24L01) { return nRF24L01_SPICmd(nRF24L01, FLUSH_TX); }
 
@@ -566,18 +573,6 @@ void nRF24L01_enableDynamicAck(nRF24L01_t* nRF24L01) {
     nRF24L01_SPIRead(nRF24L01, REG_FEATURE, &buffer, 1);
     buffer |= NRF24L01_BIT(EN_DYN_ACK);
     nRF24L01_SPIWrite(nRF24L01, REG_FEATURE, &buffer, 1);
-}
-
-/*---------------Returns what caused an interrupt-----------------*/
-/* Returns 5 if TX has been sent, 3 if it reached the max number of retries and 2 if data received (it multiplies if more than 1) */
-uint8_t nRF24L01_whatHappened(nRF24L01_t* nRF24L01) {
-    /* Read the status & reset the status in one easy call */
-    uint8_t status_val = nRF24L01_getStatus(nRF24L01);
-    nRF24L01_clearIrq(nRF24L01, 1, 1, 1);
-
-    /* Report to the user what happened */
-    return (((status_val & NRF24L01_BIT(TX_DS)) > 0) * 5) * (((status_val & NRF24L01_BIT(MAX_RT)) > 0) * 3)
-           * (((status_val & NRF24L01_BIT(RX_DR)) > 0) * 2);
 }
 
 /*-----------------------Clear interrupts-------------------------*/

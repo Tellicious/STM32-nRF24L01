@@ -45,75 +45,82 @@ extern "C" {
 /* Macros --------------------------------------------------------------------*/
 
 /* PA Level */
-#define NRF24L01_PA_MIN      0x00
-#define NRF24L01_PA_LOW      0x01
-#define NRF24L01_PA_HIGH     0x02
-#define NRF24L01_PA_MAX      0x03
+#define NRF24L01_PA_MIN        0x00
+#define NRF24L01_PA_LOW        0x01
+#define NRF24L01_PA_HIGH       0x02
+#define NRF24L01_PA_MAX        0x03
 
 /* Data rate */
-#define NRF24L01_250KBPS     0x00
-#define NRF24L01_1MBPS       0x01
-#define NRF24L01_2MBPS       0x02
+#define NRF24L01_250KBPS       0x00
+#define NRF24L01_1MBPS         0x01
+#define NRF24L01_2MBPS         0x02
 
 /* CRC Length */
-#define NRF24L01_CRC_0       0x00
-#define NRF24L01_CRC_8       0x01
-#define NRF24L01_CRC_16      0x02
+#define NRF24L01_CRC_0         0x00
+#define NRF24L01_CRC_8         0x01
+#define NRF24L01_CRC_16        0x02
 
 /* Dyn Payload */
-#define NRF24L01_DYN_PYL_EN  0x01
-#define NRF24L01_DYN_PYL_DIS 0x00
+#define NRF24L01_DYN_PYL_EN    0x01
+#define NRF24L01_DYN_PYL_DIS   0x00
 
 /* Auto ACK */
-#define NRF24L01_AUT_ACK_EN  0x3F
-#define NRF24L01_AUT_ACK_DIS 0x00
+#define NRF24L01_AUT_ACK_EN    0x3F
+#define NRF24L01_AUT_ACK_DIS   0x00
 
 /* Address width */
-#define NRF24L01_ADDR_3      0x03
-#define NRF24L01_ADDR_4      0x04
-#define NRF24L01_ADDR_5      0x05
+#define NRF24L01_ADDR_3        0x03
+#define NRF24L01_ADDR_4        0x04
+#define NRF24L01_ADDR_5        0x05
 
 /* Auto-Retr Delay */
-#define NRF24L01_ARD_250     0x00
-#define NRF24L01_ARD_500     0x01
-#define NRF24L01_ARD_750     0x02
-#define NRF24L01_ARD_1000    0x03
-#define NRF24L01_ARD_1250    0x04
-#define NRF24L01_ARD_1500    0x05
-#define NRF24L01_ARD_1750    0x06
-#define NRF24L01_ARD_2000    0x07
-#define NRF24L01_ARD_2250    0x08
-#define NRF24L01_ARD_2500    0x09
-#define NRF24L01_ARD_2750    0x0A
-#define NRF24L01_ARD_3000    0x0B
-#define NRF24L01_ARD_3250    0x0C
-#define NRF24L01_ARD_3500    0x0D
-#define NRF24L01_ARD_3750    0x0E
-#define NRF24L01_ARD_4000    0x0F
+#define NRF24L01_ARD_250       0x00
+#define NRF24L01_ARD_500       0x01
+#define NRF24L01_ARD_750       0x02
+#define NRF24L01_ARD_1000      0x03
+#define NRF24L01_ARD_1250      0x04
+#define NRF24L01_ARD_1500      0x05
+#define NRF24L01_ARD_1750      0x06
+#define NRF24L01_ARD_2000      0x07
+#define NRF24L01_ARD_2250      0x08
+#define NRF24L01_ARD_2500      0x09
+#define NRF24L01_ARD_2750      0x0A
+#define NRF24L01_ARD_3000      0x0B
+#define NRF24L01_ARD_3250      0x0C
+#define NRF24L01_ARD_3500      0x0D
+#define NRF24L01_ARD_3750      0x0E
+#define NRF24L01_ARD_4000      0x0F
 
 /* Auto-Retr Count */
-#define NRF24L01_ARC_0       0x00
-#define NRF24L01_ARC_1       0x01
-#define NRF24L01_ARC_2       0x02
-#define NRF24L01_ARC_3       0x03
-#define NRF24L01_ARC_4       0x04
-#define NRF24L01_ARC_5       0x05
-#define NRF24L01_ARC_6       0x06
-#define NRF24L01_ARC_7       0x07
-#define NRF24L01_ARC_8       0x08
-#define NRF24L01_ARC_9       0x09
-#define NRF24L01_ARC_10      0x0A
-#define NRF24L01_ARC_11      0x0B
-#define NRF24L01_ARC_12      0x0C
-#define NRF24L01_ARC_13      0x0D
-#define NRF24L01_ARC_14      0x0E
-#define NRF24L01_ARC_15      0x0F
+#define NRF24L01_ARC_0         0x00
+#define NRF24L01_ARC_1         0x01
+#define NRF24L01_ARC_2         0x02
+#define NRF24L01_ARC_3         0x03
+#define NRF24L01_ARC_4         0x04
+#define NRF24L01_ARC_5         0x05
+#define NRF24L01_ARC_6         0x06
+#define NRF24L01_ARC_7         0x07
+#define NRF24L01_ARC_8         0x08
+#define NRF24L01_ARC_9         0x09
+#define NRF24L01_ARC_10        0x0A
+#define NRF24L01_ARC_11        0x0B
+#define NRF24L01_ARC_12        0x0C
+#define NRF24L01_ARC_13        0x0D
+#define NRF24L01_ARC_14        0x0E
+#define NRF24L01_ARC_15        0x0F
 
 /* STATUS vals */
-/* usage is_tx_sent=!(whatHappened() % NRF24L01_TX_SENT); */
-#define NRF24L01_TX_SENT     5
-#define NRF24L01_MAX_RETR    3
-#define NRF24L01_RX_AVAIL    2
+#define NRF24L01_RX_DR         (1 << 6)
+#define NRF24L01_TX_SENT       (1 << 5)
+#define NRF24L01_MAX_RETR      (1 << 4)
+#define NRF24L01_TX_FULL       (1)
+
+/* FIFO status values */
+#define NRF24L01_FIFO_TX_REUSE (1 << 6)
+#define NRF24L01_FIFO_TX_FULL  (1 << 5)
+#define NRF24L01_FIFO_TX_EMPTY (1 << 4)
+#define NRF24L01_FIFO_RX_FULL  (1 << 1)
+#define NRF24L01_FIFO_RX_EMPTY (1)
 
 /* Typedefs ------------------------------------------------------------------*/
 
@@ -204,6 +211,15 @@ void nRF24L01_turnOffRadio(nRF24L01_t* nRF24L01);
  * \return          raw value of status register
  */
 uint8_t nRF24L01_getStatus(nRF24L01_t* nRF24L01);
+
+/**
+ * \brief           Check value of FIFO status register
+ *
+ * \param[in]       nRF24L01: pointer to nRF24L01 structure
+ *
+ * \return          raw value of FIFO status register
+ */
+uint8_t nRF24L01_getFIFOStatus(nRF24L01_t* nRF24L01);
 
 /**
  * \brief           Flush transmit buffer
@@ -334,15 +350,6 @@ void nRF24L01_enableAckPayload(nRF24L01_t* nRF24L01);
  * \param[in]       nRF24L01: pointer to nRF24L01 structure
  */
 void nRF24L01_enableDynamicAck(nRF24L01_t* nRF24L01);
-
-/**
- * \brief           Check what caused an interrupt
- *
- * \param[in]       nRF24L01: pointer to nRF24L01 structure
- *
- * \return          5 if TX has been sent, 3 if it reached the max number of retries and 2 if data received (multiplied if more than 1)
- */
-uint8_t nRF24L01_whatHappened(nRF24L01_t* nRF24L01);
 
 /**
   * \brief           Clear interrupts

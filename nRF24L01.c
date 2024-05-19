@@ -147,42 +147,6 @@
 
 /* Private  functions ---------------------------------------------------------*/
 
-/*--------------------Faster SPI transmit----------------------*/
-static void SPI_fastTransmit(SPI_HandleTypeDef* xSpiHandle, uint8_t* txBuf, uint16_t length) {
-    /* Check if the SPI is already enabled */
-    if ((xSpiHandle->Instance->CR1 & SPI_CR1_SPE) != SPI_CR1_SPE) {
-        /* Enable SPI peripheral */
-        __HAL_SPI_ENABLE(xSpiHandle);
-    }
-    while (length--) {
-        while (!(xSpiHandle->Instance->SR & SPI_FLAG_TXE)) {}
-        *(__IO uint8_t*)&xSpiHandle->Instance->DR = *txBuf++;
-    }
-    /* Wait BSY flag */
-    while (!(xSpiHandle->Instance->SR & SPI_FLAG_TXE)) {}
-    while ((xSpiHandle->Instance->SR & SPI_FLAG_BSY) == SPI_FLAG_BSY) {}
-    __HAL_SPI_CLEAR_OVRFLAG(xSpiHandle);
-}
-
-/*---------------------Faster SPI receive----------------------*/
-static void SPI_fastReceive(SPI_HandleTypeDef* xSpiHandle, uint8_t* rxBuf, uint16_t length) {
-    /* Check if the SPI is already enabled */
-    if ((xSpiHandle->Instance->CR1 & SPI_CR1_SPE) != SPI_CR1_SPE) {
-        /* Enable SPI peripheral */
-        __HAL_SPI_ENABLE(xSpiHandle);
-    }
-    while (length--) {
-        while (!(xSpiHandle->Instance->SR & SPI_SR_TXE)) {}
-        *(__IO uint8_t*)&xSpiHandle->Instance->DR = 0;
-        /* Check the RXNE flag */
-        while (!(xSpiHandle->Instance->SR & SPI_FLAG_RXNE)) {}
-        *rxBuf++ = *(__IO uint8_t*)&xSpiHandle->Instance->DR;
-    }
-    /* Wait BSY flag */
-    while ((xSpiHandle->Instance->SR & SPI_FLAG_BSY) == SPI_FLAG_BSY) {}
-    __HAL_SPI_CLEAR_OVRFLAG(xSpiHandle);
-}
-
 /*----------------Faster SPI transmit/receive------------------*/
 static void SPI_fastTransmitReceive(SPI_HandleTypeDef* xSpiHandle, uint8_t* txBuf, uint8_t* rxBuf, uint16_t length) {
     /* Check if the SPI is already enabled */
@@ -191,10 +155,14 @@ static void SPI_fastTransmitReceive(SPI_HandleTypeDef* xSpiHandle, uint8_t* txBu
         __HAL_SPI_ENABLE(xSpiHandle);
     }
     while (length--) {
+        /* Check the TXE flag */
         while (!(xSpiHandle->Instance->SR & SPI_SR_TXE)) {}
-        *(__IO uint8_t*)&xSpiHandle->Instance->DR = *txBuf++;
-        while (!(xSpiHandle->Instance->SR & SPI_SR_RXNE)) {}
-        *rxBuf++ = *(__IO uint8_t*)&xSpiHandle->Instance->DR;
+        *(__IO uint8_t*)&xSpiHandle->Instance->DR = ((txBuf == NULL) ? 0 : *txBuf++);
+        /* Check the RXNE flag */
+        if (rxBuf != NULL) {
+            while (!(xSpiHandle->Instance->SR & SPI_SR_RXNE)) {}
+            *rxBuf++ = *(__IO uint8_t*)&xSpiHandle->Instance->DR;
+        }
     }
     /* Wait BSY flag */
     while ((xSpiHandle->Instance->SR & SPI_FLAG_BSY) == SPI_FLAG_BSY) {}
@@ -206,8 +174,8 @@ static void nRF24L01_SPIWrite(nRF24L01_t* nRF24L01, uint8_t addr, uint8_t* buffe
     addr &= REGISTER_MASK;
     addr |= W_REGISTER;
     NRF24L01_WRITE_PIN(nRF24L01->cs.port, nRF24L01->cs.pin, NRF24L01_PIN_RESET);
-    SPI_fastTransmit(nRF24L01->spi, &addr, 1);
-    SPI_fastTransmit(nRF24L01->spi, buffer, length);
+    SPI_fastTransmitReceive(nRF24L01->spi, &addr, NULL, 1);
+    SPI_fastTransmitReceive(nRF24L01->spi, buffer, NULL, length);
     //HAL_SPI_Transmit(nRF24L01->spi, &addr, 1, 1000);
     //HAL_SPI_Transmit(nRF24L01->spi, buffer, length, 1000);
     NRF24L01_WRITE_PIN(nRF24L01->cs.port, nRF24L01->cs.pin, NRF24L01_PIN_SET);
@@ -227,8 +195,8 @@ static uint8_t nRF24L01_SPICmd(nRF24L01_t* nRF24L01, uint8_t cmd) {
 static void nRF24L01_SPIRead(nRF24L01_t* nRF24L01, uint8_t addr, uint8_t* buffer, uint8_t length) {
     addr &= REGISTER_MASK;
     NRF24L01_WRITE_PIN(nRF24L01->cs.port, nRF24L01->cs.pin, NRF24L01_PIN_RESET);
-    SPI_fastTransmit(nRF24L01->spi, &addr, 1);
-    SPI_fastReceive(nRF24L01->spi, buffer, length);
+    SPI_fastTransmitReceive(nRF24L01->spi, &addr, NULL, 1);
+    SPI_fastTransmitReceive(nRF24L01->spi, NULL, buffer, length);
     // HAL_SPI_Transmit(nRF24L01->spi, &addr, 1, 1000);
     // HAL_SPI_Receive(nRF24L01->spi, buffer, length, 1000);
     NRF24L01_WRITE_PIN(nRF24L01->cs.port, nRF24L01->cs.pin, NRF24L01_PIN_SET);
@@ -243,7 +211,7 @@ static void nRF24L01_writePayload(nRF24L01_t* nRF24L01, const void* buffer, uint
     txBuffer[0] = writeType;
     memcpy(txBuffer + 1, buffer, length);
     NRF24L01_WRITE_PIN(nRF24L01->cs.port, nRF24L01->cs.pin, NRF24L01_PIN_RESET);
-    SPI_fastTransmit(nRF24L01->spi, txBuffer, txLen);
+    SPI_fastTransmitReceive(nRF24L01->spi, txBuffer, NULL, txLen);
     // HAL_SPI_Transmit(nRF24L01->spi, txBuffer, txLen, 1000);
     NRF24L01_WRITE_PIN(nRF24L01->cs.port, nRF24L01->cs.pin, NRF24L01_PIN_SET);
 }
@@ -257,7 +225,7 @@ void nRF24L01_writeAckPayload(nRF24L01_t* nRF24L01, uint8_t pipe, void* buffer, 
     txBuffer[0] = W_ACK_PAYLOAD | (pipe & 0x07);
     memcpy(txBuffer + 1, buffer, length);
     NRF24L01_WRITE_PIN(nRF24L01->cs.port, nRF24L01->cs.pin, NRF24L01_PIN_RESET);
-    SPI_fastTransmit(nRF24L01->spi, txBuffer, txLen);
+    SPI_fastTransmitReceive(nRF24L01->spi, txBuffer, NULL, txLen);
     // HAL_SPI_Transmit(nRF24L01->spi, txBuffer, txLen, 1000);
     NRF24L01_WRITE_PIN(nRF24L01->cs.port, nRF24L01->cs.pin, NRF24L01_PIN_SET);
 }
@@ -268,8 +236,8 @@ static void nRF24L01_readPayload(nRF24L01_t* nRF24L01, void* buffer, uint8_t len
     uint8_t rxLen = ((nRF24L01->dynPayloadEn == NRF24L01_DYN_PYL_EN) ? length : nRF24L01->payloadSize);
     uint8_t txBuffer = R_RX_PAYLOAD;
     NRF24L01_WRITE_PIN(nRF24L01->cs.port, nRF24L01->cs.pin, NRF24L01_PIN_RESET);
-    SPI_fastTransmit(nRF24L01->spi, &txBuffer, 1);
-    SPI_fastReceive(nRF24L01->spi, buffer, rxLen);
+    SPI_fastTransmitReceive(nRF24L01->spi, &txBuffer, NULL, 1);
+    SPI_fastTransmitReceive(nRF24L01->spi, NULL, buffer, rxLen);
     // HAL_SPI_Transmit(nRF24L01->spi, &txBuffer, 1, 1000);
     // HAL_SPI_Receive(nRF24L01->spi, buffer, rxLen, 1000);
     NRF24L01_WRITE_PIN(nRF24L01->cs.port, nRF24L01->cs.pin, NRF24L01_PIN_SET);

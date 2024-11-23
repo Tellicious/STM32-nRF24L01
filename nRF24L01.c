@@ -165,6 +165,7 @@ static void SPI_fastTransmitReceive(SPI_HandleTypeDef* xSpiHandle, uint8_t* txBu
         }
     }
     /* Wait BSY flag */
+    while (!(xSpiHandle->Instance->SR & SPI_SR_TXE)) {}
     while ((xSpiHandle->Instance->SR & SPI_FLAG_BSY) == SPI_FLAG_BSY) {}
     __HAL_SPI_CLEAR_OVRFLAG(xSpiHandle);
 }
@@ -271,8 +272,7 @@ nRF24L01_retStatus_t nRF24L01_init(nRF24L01_t* nRF24L01) {
         nRF24L01_SPIWrite(nRF24L01, REG_FEATURE, &buffer, 1);
         /* Enable dynamic payload on all pipes */
         nRF24L01_SPIRead(nRF24L01, REG_DYNPD, &buffer, 1);
-        buffer |= NRF24L01_BIT(DPL_P5) | NRF24L01_BIT(DPL_P4) | NRF24L01_BIT(DPL_P3) | NRF24L01_BIT(DPL_P2)
-                  | NRF24L01_BIT(DPL_P1) | NRF24L01_BIT(DPL_P0);
+        buffer |= NRF24L01_BIT(DPL_P5) | NRF24L01_BIT(DPL_P4) | NRF24L01_BIT(DPL_P3) | NRF24L01_BIT(DPL_P2) | NRF24L01_BIT(DPL_P1) | NRF24L01_BIT(DPL_P0);
         nRF24L01_SPIWrite(nRF24L01, REG_DYNPD, &buffer, 1);
     }
     /* Set CRC length */
@@ -287,8 +287,7 @@ nRF24L01_retStatus_t nRF24L01_init(nRF24L01_t* nRF24L01) {
     /* Reset interrupts */
     nRF24L01_clearIrq(nRF24L01, 1, 1, 1);
     /* Check correct initialization */
-    if ((nRF24L01_getChannel(nRF24L01) != nRF24L01->channel)
-        || (nRF24L01_getDataRate(nRF24L01) != nRF24L01->dataRate)) {
+    if ((nRF24L01_getChannel(nRF24L01) != nRF24L01->channel) || (nRF24L01_getDataRate(nRF24L01) != nRF24L01->dataRate)) {
         return NRF24L01_ERROR;
     }
     /* Flush buffers */
@@ -529,8 +528,7 @@ void nRF24L01_enableAckPayload(nRF24L01_t* nRF24L01) {
     nRF24L01_SPIWrite(nRF24L01, REG_FEATURE, &buffer, 1);
     /* Enable dynamic payload on pipes 0 & 1 */
     nRF24L01_SPIRead(nRF24L01, REG_DYNPD, &buffer, 1);
-    buffer |= NRF24L01_BIT(DPL_P5) | NRF24L01_BIT(DPL_P4) | NRF24L01_BIT(DPL_P3) | NRF24L01_BIT(DPL_P2)
-              | NRF24L01_BIT(DPL_P1) | NRF24L01_BIT(DPL_P0);
+    buffer |= NRF24L01_BIT(DPL_P5) | NRF24L01_BIT(DPL_P4) | NRF24L01_BIT(DPL_P3) | NRF24L01_BIT(DPL_P2) | NRF24L01_BIT(DPL_P1) | NRF24L01_BIT(DPL_P0);
     nRF24L01_SPIWrite(nRF24L01, REG_DYNPD, &buffer, 1);
     nRF24L01->dynPayloadEn = NRF24L01_DYN_PYL_EN;
 }
@@ -556,9 +554,7 @@ void nRF24L01_openWritingPipe(nRF24L01_t* nRF24L01, const void* address) {
 }
 
 /*-----------------------Reopen Writing Pipe---------------------*/
-void nRF24L01_reopenWritingPipe(nRF24L01_t* nRF24L01) {
-    nRF24L01_SPIWrite(nRF24L01, REG_TX_ADDR, nRF24L01->txAddress, nRF24L01->addrWidth);
-}
+void nRF24L01_reopenWritingPipe(nRF24L01_t* nRF24L01) { nRF24L01_SPIWrite(nRF24L01, REG_TX_ADDR, nRF24L01->txAddress, nRF24L01->addrWidth); }
 
 /*------------------------Open Reading Pipe----------------------*/
 void nRF24L01_openReadingPipe(nRF24L01_t* nRF24L01, uint8_t pipe, void* address) {
@@ -625,8 +621,7 @@ void nRF24L01_startReceiver(nRF24L01_t* nRF24L01) {
     nRF24L01_clearIrq(nRF24L01, 1, 1, 1);
 
     NRF24L01_WRITE_PIN(nRF24L01->ce.port, nRF24L01->ce.pin, NRF24L01_PIN_SET);
-    if (nRF24L01->rx0Address[0] | nRF24L01->rx0Address[1] | nRF24L01->rx0Address[2] | nRF24L01->rx0Address[3]
-        | nRF24L01->rx0Address[4]) {
+    if (nRF24L01->rx0Address[0] | nRF24L01->rx0Address[1] | nRF24L01->rx0Address[2] | nRF24L01->rx0Address[3] | nRF24L01->rx0Address[4]) {
         nRF24L01_SPIWrite(nRF24L01, REG_RX_ADDR_P0, nRF24L01->rx0Address, nRF24L01->addrWidth);
         nRF24L01_SPIWrite(nRF24L01, REG_RX_PW_P0, &(nRF24L01->payloadSize), 1);
         nRF24L01_SPIRead(nRF24L01, REG_EN_RXADDR, &buffer, 1);
@@ -643,16 +638,14 @@ void nRF24L01_startReceiver(nRF24L01_t* nRF24L01) {
 }
 
 /*------------------------------Write----------------------------*/
-nRF24L01_retStatus_t nRF24L01_write(nRF24L01_t* nRF24L01, const void* buffer, uint8_t length, const uint8_t multicast,
-                                    const uint8_t wait, uint32_t timeout) {
+nRF24L01_retStatus_t nRF24L01_write(nRF24L01_t* nRF24L01, const void* buffer, uint8_t length, const uint8_t multicast, const uint8_t wait, uint32_t timeout) {
     nRF24L01_clearIrq(nRF24L01, 1, 1, 1);
     NRF24L01_WRITE_PIN(nRF24L01->ce.port, nRF24L01->ce.pin, NRF24L01_PIN_SET); /* Put in Standby-II mode */
     if (wait) {
         /* Empty the current buffer */
-        while ((nRF24L01_getStatus(nRF24L01)
-                & (NRF24L01_BIT(TX_FULL)))) { /* This will loop and block until TX is no longer full */
-            if (nRF24L01_getStatus(nRF24L01) & NRF24L01_BIT(MAX_RT)) { /* If MAX Retries have been reached */
-                nRF24L01_clearIrq(nRF24L01, 0, 1, 0);                  /* Clear max retry flag */
+        while ((nRF24L01_getStatus(nRF24L01) & (NRF24L01_BIT(TX_FULL)))) {                 /* This will loop and block until TX is no longer full */
+            if (nRF24L01_getStatus(nRF24L01) & NRF24L01_BIT(MAX_RT)) {                     /* If MAX Retries have been reached */
+                nRF24L01_clearIrq(nRF24L01, 0, 1, 0);                                      /* Clear max retry flag */
                 NRF24L01_WRITE_PIN(nRF24L01->ce.port, nRF24L01->ce.pin, NRF24L01_PIN_SET); /* Set re-transmit */
             }
             if (--timeout == 0) { /* If the timeout is reached, flush the TX buffer and return */
@@ -674,18 +667,17 @@ nRF24L01_retStatus_t nRF24L01_write(nRF24L01_t* nRF24L01, const void* buffer, ui
 }
 
 /*--------------Write and wait for data to be sent----------------*/
-nRF24L01_retStatus_t nRF24L01_safeWrite(nRF24L01_t* nRF24L01, const void* buffer, uint8_t length,
-                                        const uint8_t multicast, const uint8_t wait, uint32_t timeout) {
+nRF24L01_retStatus_t nRF24L01_safeWrite(nRF24L01_t* nRF24L01, const void* buffer, uint8_t length, const uint8_t multicast, const uint8_t wait,
+                                        uint32_t timeout) {
     uint32_t _timeout = timeout;
     uint8_t buffer2;
     nRF24L01_clearIrq(nRF24L01, 1, 1, 1);
     NRF24L01_WRITE_PIN(nRF24L01->ce.port, nRF24L01->ce.pin, NRF24L01_PIN_SET); /* Put in Standby-II mode */
     if (wait) {
         /* Empty the current buffer */
-        while ((nRF24L01_getStatus(nRF24L01)
-                & (NRF24L01_BIT(TX_FULL)))) { /* This will loop and block until TX is no longer full */
-            if (nRF24L01_getStatus(nRF24L01) & NRF24L01_BIT(MAX_RT)) { /* If MAX Retries have been reached */
-                nRF24L01_clearIrq(nRF24L01, 0, 1, 0);                  /* Clear max retry flag */
+        while ((nRF24L01_getStatus(nRF24L01) & (NRF24L01_BIT(TX_FULL)))) {                 /* This will loop and block until TX is no longer full */
+            if (nRF24L01_getStatus(nRF24L01) & NRF24L01_BIT(MAX_RT)) {                     /* If MAX Retries have been reached */
+                nRF24L01_clearIrq(nRF24L01, 0, 1, 0);                                      /* Clear max retry flag */
                 NRF24L01_WRITE_PIN(nRF24L01->ce.port, nRF24L01->ce.pin, NRF24L01_PIN_SET); /* Set re-transmit */
             }
             if (--_timeout == 0) { /* If the timeout is reached, flush the TX buffer and return */
@@ -706,8 +698,8 @@ nRF24L01_retStatus_t nRF24L01_safeWrite(nRF24L01_t* nRF24L01, const void* buffer
     _timeout = timeout;
     nRF24L01_SPIRead(nRF24L01, REG_FIFO_STATUS, &buffer2, 1);
     while (!(buffer2 & NRF24L01_BIT(TX_EMPTY))) {
-        if (nRF24L01_getStatus(nRF24L01) & NRF24L01_BIT(MAX_RT)) { /* If MAX Retries have been reached */
-            nRF24L01_clearIrq(nRF24L01, 0, 1, 0);                  /* Clear max retry flag */
+        if (nRF24L01_getStatus(nRF24L01) & NRF24L01_BIT(MAX_RT)) {                     /* If MAX Retries have been reached */
+            nRF24L01_clearIrq(nRF24L01, 0, 1, 0);                                      /* Clear max retry flag */
             NRF24L01_WRITE_PIN(nRF24L01->ce.port, nRF24L01->ce.pin, NRF24L01_PIN_SET); /* Set re-transmit */
         }
         if (--_timeout == 0) { /* If the timeout is reached, flush the TX buffer and return */
@@ -734,8 +726,8 @@ uint8_t nRF24L01_TXStandby(nRF24L01_t* nRF24L01, uint8_t wait_dispatch, uint32_t
         /* Wait until TX is not empty */
         nRF24L01_SPIRead(nRF24L01, REG_FIFO_STATUS, &buffer, 1);
         while (!(buffer & NRF24L01_BIT(TX_EMPTY))) {
-            if (nRF24L01_getStatus(nRF24L01) & NRF24L01_BIT(MAX_RT)) { /* If MAX Retries have been reached */
-                nRF24L01_clearIrq(nRF24L01, 0, 1, 0);                  /* Clear max retry flag */
+            if (nRF24L01_getStatus(nRF24L01) & NRF24L01_BIT(MAX_RT)) {                     /* If MAX Retries have been reached */
+                nRF24L01_clearIrq(nRF24L01, 0, 1, 0);                                      /* Clear max retry flag */
                 NRF24L01_WRITE_PIN(nRF24L01->ce.port, nRF24L01->ce.pin, NRF24L01_PIN_SET); /* Set re-transmit */
             }
             if (--timeout == 0) { /* If the timeout is reached, flush the TX buffer and return */
@@ -764,13 +756,10 @@ void nRF24L01_read(nRF24L01_t* nRF24L01, void* buffer, uint8_t length) {
 }
 
 /*-------------------Choose random TX address-------------------*/
-void nRF24L01_randTXAddr(nRF24L01_t* nRF24L01, uint8_t workingByte) {
-    nRF24L01->txAddress[workingByte] = (uint8_t)NRF24L01_TICK;
-}
+void nRF24L01_randTXAddr(nRF24L01_t* nRF24L01, uint8_t workingByte) { nRF24L01->txAddress[workingByte] = (uint8_t)NRF24L01_TICK; }
 
 /*--------------------Match sender address---------------------*/
-nRF24L01_retStatus_t nRF24L01_RXMatch(nRF24L01_t* nRF24L01, uint8_t pipe, void* address, uint8_t workingByte,
-                                      uint32_t delay, uint32_t timeout) {
+nRF24L01_retStatus_t nRF24L01_RXMatch(nRF24L01_t* nRF24L01, uint8_t pipe, void* address, uint8_t workingByte, uint32_t delay, uint32_t timeout) {
     uint8_t* ptr = (uint8_t*)address;
     if (pipe > 1) {
         workingByte = 0;
